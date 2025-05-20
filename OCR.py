@@ -3,7 +3,7 @@ import numpy as np
 import pytesseract
 
 # Path to the Tesseract executable (update this based on your system)
-pytesseract.pytesseract.tesseract_cmd = r"C:\Users\Abhijeet Karwade\AppData\Local\Programs\Tesseract-OCR\tesseract.exe"
+#pytesseract.pytesseract.tesseract_cmd = r"C:\Users\Abhijeet Karwade\AppData\Local\Programs\Tesseract-OCR\tesseract.exe"
 
 def extract_text_from_image(image_path):
     # Load the image

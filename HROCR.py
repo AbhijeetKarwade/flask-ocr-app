@@ -4,7 +4,7 @@ import pytesseract
 import os
 import datetime
 # Configure Tesseract path
-pytesseract.pytesseract.tesseract_cmd = r"C:\Users\Abhijeet Karwade\AppData\Local\Programs\Tesseract-OCR\tesseract.exe"
+#pytesseract.pytesseract.tesseract_cmd = r"C:\Users\Abhijeet Karwade\AppData\Local\Programs\Tesseract-OCR\tesseract.exe"
 
 def order_points(pts):
     """Arrange points in a consistent order: top-left, top-right, bottom-right, bottom-left"""
