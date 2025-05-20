@@ -1,0 +1,50 @@
+{
+    "bill_no": 6,
+    "vendor_name": "Katanasushi",
+    "items": [
+        {
+            "quantity": 1,
+            "name": "Hamachicollar",
+            "price": "12.00"
+        },
+        {
+            "quantity": 1,
+            "name": "Megapokebowl",
+            "price": "17.00"
+        },
+        {
+            "quantity": 1,
+            "name": "Hamachisashimi",
+            "price": "12.00"
+        },
+        {
+            "quantity": 1,
+            "name": "Magurosashimi",
+            "price": "11.00"
+        },
+        {
+            "quantity": 1,
+            "name": "Salmonsashimi",
+            "price": "10.00"
+        },
+        {
+            "quantity": 1,
+            "name": "Hamachijapapeno",
+            "price": "12.00"
+        },
+        {
+            "quantity": 1,
+            "name": "Salmancollar",
+            "price": "10.00"
+        },
+        {
+            "quantity": 1,
+            "name": "Escolarsashimi",
+            "price": "11.00"
+        }
+    ],
+    "subtotal": "131.00",
+    "tax": "12.71",
+    "total": "143.71",
+    "payment_type": null
+}

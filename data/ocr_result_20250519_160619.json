@@ -1,0 +1,30 @@
+{
+    "bill_no": 10,
+    "vendor_name": "Akira",
+    "items": [
+        {
+            "quantity": 1,
+            "name": "Sushideiuxe",
+            "price": "20.75"
+        },
+        {
+            "quantity": 1,
+            "name": "Glenmont Roa",
+            "price": "18.95"
+        },
+        {
+            "quantity": 2,
+            "name": "Sptunar",
+            "price": "13.00"
+        },
+        {
+            "quantity": 1,
+            "name": "An",
+            "price": "6.53"
+        }
+    ],
+    "subtotal": null,
+    "tax": null,
+    "total": null,
+    "payment_type": null
+}

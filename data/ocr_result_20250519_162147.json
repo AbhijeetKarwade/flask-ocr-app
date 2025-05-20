@@ -1,0 +1,15 @@
+{
+    "bill_no": 22,
+    "vendor_name": "Paradiserestaurant",
+    "items": [
+        {
+            "quantity": 1,
+            "name": "Subtota",
+            "price": "20.00"
+        }
+    ],
+    "subtotal": null,
+    "tax": null,
+    "total": null,
+    "payment_type": null
+}

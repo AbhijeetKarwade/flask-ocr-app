@@ -1,0 +1,15 @@
+{
+    "bill_no": 25,
+    "vendor_name": "Aklra",
+    "items": [
+        {
+            "quantity": 1,
+            "name": "Glenmontro",
+            "price": "15.95"
+        }
+    ],
+    "subtotal": null,
+    "tax": null,
+    "total": "93.58",
+    "payment_type": null
+}

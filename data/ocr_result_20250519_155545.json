@@ -1,0 +1,55 @@
+{
+    "bill_no": 7,
+    "vendor_name": "2018Huwittavoe",
+    "items": [
+        {
+            "quantity": 1,
+            "name": "Hanachicoltlar",
+            "price": "12.00"
+        },
+        {
+            "quantity": 1,
+            "name": "Hegapokebouwl",
+            "price": "17.00"
+        },
+        {
+            "quantity": 1,
+            "name": "Hanachitsashini",
+            "price": "212.00"
+        },
+        {
+            "quantity": 1,
+            "name": "Hagurosashini",
+            "price": "11.00"
+        },
+        {
+            "quantity": 1,
+            "name": "Salnonsashini",
+            "price": "10.00"
+        },
+        {
+            "quantity": 1,
+            "name": "Foon Of",
+            "price": "36.00"
+        },
+        {
+            "quantity": 1,
+            "name": "Hanachijapapeno",
+            "price": "12.00"
+        },
+        {
+            "quantity": 1,
+            "name": "Saltnoncotllar",
+            "price": "10.00"
+        },
+        {
+            "quantity": 1,
+            "name": "Escolarsashini",
+            "price": "11.00"
+        }
+    ],
+    "subtotal": "131.00",
+    "tax": "12.71",
+    "total": "143.71",
+    "payment_type": null
+}

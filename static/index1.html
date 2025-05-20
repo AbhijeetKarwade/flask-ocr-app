@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="OCR Image Processor with cropping and multiple processing options">
+    <title>OCR Image Processor</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Cropper.js CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #e0e7ff 0%, #f3e8ff 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin-top: 30px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+        }
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+        .card-body {
+            padding: 25px;
+        }
+        h1 {
+            color: #2c3e50;
+            font-weight: 700;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+        }
+        h5 {
+            color: #34495e;
+            font-weight: 600;
+        }
+        .image-container {
+            position: relative;
+            display: inline-block;
+        }
+        .image-preview, .cropped-image, .transformed-image, .transformed-only-image {
+            max-width: 100%;
+            max-height: 400px;
+            display: none;
+            border-radius: 8px;
+            border: 2px solid #ddd;
+            margin: 15px 0;
+            transition: all 0.3s ease;
+        }
+        .image-preview:hover, .cropped-image:hover, .transformed-image:hover, .transformed-only-image:hover {
+            border-color: #007bff;
+            transform: scale(1.02);
+        }
+        #imageCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: none;
+        }
+        #cropButton, #recropButton, #transformButton, #processStandardButton, #processHighResButton, #selectCornersButton, #clearCornersButton, #saveJsonButton {
+            display: none;
+            transition: all 0.3s ease;
+        }
+        .btn {
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: 500;
+        }
+        .btn-primary {
+            background: linear-gradient(45deg, #007bff, #00c4ff);
+        }
+        .btn-primary:hover {
+            background: linear-gradient(45deg, #0056b3, #0096cc);
+        }
+        .btn-secondary {
+            background: linear-gradient(45deg, #6c757d, #868e96);
+        }
+        .btn-secondary:hover {
+            background: linear-gradient(45deg, #5a6268, #747b82);
+        }
+        .btn-warning {
+            background: linear-gradient(45deg, #ffc107, #ffdb58);
+        }
+        .btn-warning:hover {
+            background: linear-gradient(45deg, #e0a800, #e6c34d);
+        }
+        .btn-danger {
+            background: linear-gradient(45deg, #dc3545, #ff586a);
+        }
+        .btn-danger:hover {
+            background: linear-gradient(45deg, #c82333, #e63e4e);
+        }
+        .btn-success {
+            background: linear-gradient(45deg, #28a745, #34c759);
+        }
+        .btn-success:hover {
+            background: linear-gradient(45deg, #218838, #2ba84a);
+        }
+        .btn-info {
+            background: linear-gradient(45deg, #17a2b8, #1ac6e0);
+        }
+        .btn-info:hover {
+            background: linear-gradient(45deg, #138496, #15a1b8);
+        }
+        #result {
+            margin-top: 25px;
+            white-space: pre-wrap;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #e0e0e0;
+            min-height: 150px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+        #result:hover {
+            border-color: #007bff;
+        }
+        .loader {
+            display: none;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #007bff;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 15px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .btn-icon {
+            margin-right: 5px;
+        }
+        .text-center {
+            margin-top: 20px;
+        }
+        .image-section {
+            margin-top: 20px;
+        }
+        .image-section h6 {
+            color: #34495e;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        .form-check {
+            margin-bottom: 15px;
+        }
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            .btn {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+            .image-preview, .cropped-image, .transformed-image, .transformed-only-image {
+                max-height: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center mb-4">OCR Image Processor</h1>
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Upload and Process Image</h5>
+                <input type="file" id="imageInput" accept="image/*" class="form-control mb-3">
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input" id="useAutomatic" checked>
+                    <label class="form-check-label" for="useAutomatic">
+                        Use Automatic Corner Detection
+                    </label>
+                </div>
+                <div class="image-section">
+                    <h6>Original Image</h6>
+                    <div class="image-container">
+                        <img id="imagePreview" class="image-preview" alt="Original Image Preview">
+                        <canvas id="imageCanvas"></canvas>
+                    </div>
+                </div>
+                <div class="text-center mt-3">
+                    <button id="cropButton" class="btn btn-primary">
+                        <i class="fas fa-crop-alt btn-icon"></i>Crop Image
+                    </button>
+                    <button id="recropButton" class="btn btn-secondary">
+                        <i class="fas fa-undo btn-icon"></i>Re-crop Image
+                    </button>
+                    <button id="selectCornersButton" class="btn btn-warning">
+                        <i class="fas fa-crosshairs btn-icon"></i>Select Corners
+                    </button>
+                    <button id="clearCornersButton" class="btn btn-danger">
+                        <i class="fas fa-times btn-icon"></i>Clear Corners
+                    </button>
+                    <button id="transformButton" class="btn btn-warning">
+                        <i class="fas fa-sync-alt btn-icon"></i>Transform Image
+                    </button>
+                    <button id="processStandardButton" class="btn btn-success">
+                        <i class="fas fa-file-alt btn-icon"></i>Crop & Process (Standard)
+                    </button>
+                    <button id="processHighResButton" class="btn btn-info">
+                        <i class="fas fa-search-plus btn-icon"></i>Crop & Process (High-Res)
+                    </button>
+                    <button id="saveJsonButton" class="btn btn-primary">
+                        <i class="fas fa-download btn-icon"></i>Save to JSON
+                    </button>
+                    <div id="loader" class="loader"></div>
+                </div>
+            </div>
+        </div>
+        <div class="image-section">
+            <h6>Transformed Image (After Straightening)</h6>
+            <img id="transformedOnlyImage" class="transformed-only-image" alt="Transformed Only Image">
+        </div>
+        <div class="image-section">
+            <h6>Cropped Image (High-Res Mode Only)</h6>
+            <img id="croppedImage" class="cropped-image" alt="Cropped Image">
+        </div>
+        <div class="image-section">
+            <h6>Transformed Image (High-Res Mode Only)</h6>
+            <img id="transformedImage" class="transformed-image" alt="Transformed Image">
+        </div>
+        <div id="result" class="mt-3">Extracted text will appear here...</div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Cropper.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
+    <script>
+        let cropper;
+        let originalImageData; // Store the original uploaded image
+        let croppedImageData; // Store the cropped image
+        let transformedImageData; // Store the transformed-only image
+        let selectedMode; // Store the processing mode
+        let selectedCorners = []; // Store the four corners selected by the user
+        let canvas, ctx; // Canvas for drawing corners
+        let imgElement; // Image element for reference
+
+        // Reset UI state
+        function resetUI() {
+            if (cropper) {
+                cropper.destroy();
+                cropper = null;
+            }
+            document.getElementById('imagePreview').style.display = 'none';
+            document.getElementById('croppedImage').style.display = 'none';
+            document.getElementById('transformedImage').style.display = 'none';
+            document.getElementById('transformedOnlyImage').style.display = 'none';
+            document.getElementById('imageCanvas').style.display = 'none';
+            document.getElementById('cropButton').style.display = 'none';
+            document.getElementById('recropButton').style.display = 'none';
+            document.getElementById('selectCornersButton').style.display = 'none';
+            document.getElementById('clearCornersButton').style.display = 'none';
+            document.getElementById('transformButton').style.display = 'none';
+            document.getElementById('processStandardButton').style.display = 'none';
+            document.getElementById('processHighResButton').style.display = 'none';
+            document.getElementById('saveJsonButton').style.display = 'none';
+            document.getElementById('result').textContent = 'Extracted text will appear here...';
+            selectedCorners = [];
+            croppedImageData = null;
+            transformedImageData = null;
+            originalImageData = null;
+            clearCanvas();
+        }
+
+        // Validate image file
+        function validateImageFile(file) {
+            if (!file.type.startsWith('image/')) {
+                document.getElementById('result').textContent = 'Error: Please upload a valid image file.';
+                return false;
+            }
+            const maxSize = 10 * 1024 * 1024; // 10MB limit
+            if (file.size > maxSize) {
+                document.getElementById('result').textContent = 'Error: Image size exceeds 10MB limit.';
+                return false;
+            }
+            return true;
+        }
+
+        // Clear the canvas
+        function clearCanvas() {
+            if (ctx) {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
+        }
+
+        // Draw selected corners and lines
+        function drawCorners() {
+            clearCanvas();
+            if (selectedCorners.length === 0) return;
+
+            ctx.fillStyle = 'red';
+            ctx.strokeStyle = 'red';
+            ctx.lineWidth = 2;
+
+            // Draw points
+            for (let i = 0; i < selectedCorners.length; i++) {
+                const [x, y] = selectedCorners[i];
+                ctx.beginPath();
+                ctx.arc(x, y, 5, 0, 2 * Math.PI);
+                ctx.fill();
+            }
+
+            // Draw lines connecting points
+            if (selectedCorners.length > 1) {
+                ctx.beginPath();
+                ctx.moveTo(selectedCorners[0][0], selectedCorners[0][1]);
+                for (let i = 1; i < selectedCorners.length; i++) {
+                    ctx.lineTo(selectedCorners[i][0], selectedCorners[i][1]);
+                }
+                if (selectedCorners.length === 4) {
+                    ctx.closePath();
+                }
+                ctx.stroke();
+            }
+        }
+
+        // Handle image upload
+        document.getElementById('imageInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                if (!validateImageFile(file)) {
+                    this.value = ''; // Clear the input
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    resetUI();
+                    imgElement = document.getElementById('imagePreview');
+                    imgElement.src = event.target.result;
+                    originalImageData = event.target.result; // Store original image
+                    imgElement.style.display = 'block';
+                    document.getElementById('cropButton').style.display = 'inline-block';
+                    document.getElementById('selectCornersButton').style.display = 'inline-block';
+                    document.getElementById('transformButton').style.display = 'inline-block';
+                    // Initialize cropper
+                    cropper = new Cropper(imgElement, {
+                        aspectRatio: NaN,
+                        viewMode: 1,
+                        autoCropArea: 0.8,
+                        responsive: true,
+                        zoomable: true,
+                        scalable: true,
+                        movable: true
+                    });
+                    // Initialize canvas
+                    canvas = document.getElementById('imageCanvas');
+                    ctx = canvas.getContext('2d');
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Handle crop button
+        document.getElementById('cropButton').addEventListener('click', function() {
+            if (cropper) {
+                const canvas = cropper.getCroppedCanvas({
+                    width: 800, // Ensure reasonable resolution
+                    height: 600
+                });
+                croppedImageData = canvas.toDataURL('image/jpeg', 0.9); // High quality JPEG
+                cropper.destroy();
+                imgElement = document.getElementById('imagePreview');
+                imgElement.src = croppedImageData; // Show cropped image
+                document.getElementById('cropButton').style.display = 'none';
+                document.getElementById('recropButton').style.display = 'inline-block';
+                document.getElementById('selectCornersButton').style.display = 'inline-block';
+                document.getElementById('transformButton').style.display = 'inline-block';
+                document.getElementById('processStandardButton').style.display = 'inline-block';
+                document.getElementById('processHighResButton').style.display = 'inline-block';
+                selectedCorners = [];
+                clearCanvas();
+            }
+        });
+
+        // Handle re-crop button
+        document.getElementById('recropButton').addEventListener('click', function() {
+            if (originalImageData) {
+                imgElement = document.getElementById('imagePreview');
+                imgElement.src = originalImageData; // Restore original image
+                if (cropper) {
+                    cropper.destroy();
+                }
+                cropper = new Cropper(imgElement, {
+                    aspectRatio: NaN,
+                    viewMode: 1,
+                    autoCropArea: 0.8,
+                    responsive: true,
+                    zoomable: true,
+                    scalable: true,
+                    movable: true
+                });
+                document.getElementById('cropButton').style.display = 'inline-block';
+                document.getElementById('recropButton').style.display = 'none';
+                document.getElementById('selectCornersButton').style.display = 'inline-block';
+                document.getElementById('transformButton').style.display = 'inline-block';
+                document.getElementById('processStandardButton').style.display = 'none';
+                document.getElementById('processHighResButton').style.display = 'none';
+                document.getElementById('saveJsonButton').style.display = 'none';
+                selectedCorners = [];
+                clearCanvas();
+            }
+        });
+
+        // Handle select corners button
+        document.getElementById('selectCornersButton').addEventListener('click', function() {
+            document.getElementById('result').textContent = 'Click four corners of the receipt in the order: Top-Left, Top-Right, Bottom-Right, Bottom-Left.';
+            selectedCorners = [];
+            clearCanvas();
+            if (cropper) {
+                cropper.destroy();
+                cropper = null;
+            }
+
+            // Show canvas
+            canvas.width = imgElement.width;
+            canvas.height = imgElement.height;
+            canvas.style.display = 'block';
+            document.getElementById('clearCornersButton').style.display = 'inline-block';
+        });
+
+        // Handle clear corners button
+        document.getElementById('clearCornersButton').addEventListener('click', function() {
+            selectedCorners = [];
+            clearCanvas();
+            canvas.style.display = 'none';
+            document.getElementById('result').textContent = 'Corners cleared. Click "Select Corners" to try again.';
+            document.getElementById('clearCornersButton').style.display = 'none';
+        });
+
+        // Handle canvas clicks to select corners
+        document.getElementById('imageCanvas').addEventListener('click', function(e) {
+            if (selectedCorners.length >= 4 || canvas.style.display !== 'block') return;
+
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            selectedCorners.push([x, y]);
+            drawCorners();
+
+            if (selectedCorners.length === 4) {
+                canvas.style.display = 'none';
+                document.getElementById('result').textContent = 'Four corners selected. Click "Transform Image" to straighten the image.';
+                document.getElementById('clearCornersButton').style.display = 'none';
+            } else {
+                document.getElementById('result').textContent = `Selected ${selectedCorners.length}/4 corners. Click the next corner (Top-Left, Top-Right, Bottom-Right, Bottom-Left order).`;
+            }
+        });
+
+        // Handle transform button
+        document.getElementById('transformButton').addEventListener('click', async function() {
+            const imageToTransform = croppedImageData || originalImageData;
+            if (!imageToTransform) {
+                document.getElementById('result').textContent = 'Please upload an image first.';
+                return;
+            }
+
+            const useAutomatic = document.getElementById('useAutomatic').checked;
+            if (!useAutomatic && selectedCorners.length !== 4) {
+                document.getElementById('result').textContent = 'Please select exactly four corners before transforming (or enable automatic detection).';
+                return;
+            }
+
+            document.getElementById('loader').style.display = 'block';
+            document.getElementById('result').textContent = 'Transforming...';
+            document.getElementById('transformedOnlyImage').style.display = 'none';
+
+            try {
+                // Convert base64 to blob
+                const response = await fetch(imageToTransform);
+                const blob = await response.blob();
+
+                // Create form data
+                const formData = new FormData();
+                formData.append('image', blob, 'image_to_transform.jpg');
+                formData.append('use_automatic', useAutomatic);
+                if (!useAutomatic) {
+                    formData.append('points', JSON.stringify(selectedCorners));
+                }
+
+                // Send to Flask server
+                const result = await fetch('http://127.0.0.1:5000/transform', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await result.json();
+                document.getElementById('loader').style.display = 'none';
+
+                if (data.error) {
+                    document.getElementById('result').innerHTML = `Error: ${data.error} ${useAutomatic ? '<br><a href="static/debug_edges.jpg" target="_blank">View Edge Detection Debug Image</a>' : ''}`;
+                } else {
+                    const timestamp = new Date().getTime(); // Add timestamp to prevent caching
+                    document.getElementById('transformedOnlyImage').src = `${data.transformed_image}?t=${timestamp}`;
+                    document.getElementById('transformedOnlyImage').style.display = 'block';
+                    transformedImageData = imageToTransform; // Store for further processing
+                    document.getElementById('result').textContent = 'Image transformed successfully. You can now process it.';
+                    // Show process buttons if not already visible
+                    document.getElementById('processStandardButton').style.display = 'inline-block';
+                    document.getElementById('processHighResButton').style.display = 'inline-block';
+                    document.getElementById('saveJsonButton').style.display = 'inline-block';
+                }
+            } catch (error) {
+                document.getElementById('loader').style.display = 'none';
+                document.getElementById('result').textContent = `Error: ${error.message}`;
+            }
+        });
+
+        // Handle process buttons
+        function initiateProcessing(mode) {
+            const imageToProcess = transformedImageData || croppedImageData || originalImageData;
+            if (!imageToProcess) {
+                document.getElementById('result').textContent = 'Please upload or transform an image first.';
+                return;
+            }
+            selectedMode = mode;
+            processImage(imageToProcess);
+        }
+
+        document.getElementById('processStandardButton').addEventListener('click', () => initiateProcessing('standard'));
+        document.getElementById('processHighResButton').addEventListener('click', () => initiateProcessing('high-res'));
+
+        // Process the cropped or transformed image
+        async function processImage(imageData) {
+            document.getElementById('loader').style.display = 'block';
+            document.getElementById('result').textContent = 'Processing...';
+            // Hide images until processing is complete
+            document.getElementById('croppedImage').style.display = 'none';
+            document.getElementById('transformedImage').style.display = 'none';
+
+            try {
+                // Convert base64 to blob
+                const response = await fetch(imageData);
+                const blob = await response.blob();
+
+                // Create form data
+                const formData = new FormData();
+                formData.append('image', blob, 'image_to_process.jpg');
+                formData.append('mode', selectedMode);
+
+                // Send to Flask server
+                const result = await fetch('http://127.0.0.1:5000/process', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await result.json();
+                document.getElementById('loader').style.display = 'none';
+
+                if (data.error) {
+                    document.getElementById('result').textContent = `Error: ${data.error}`;
+                } else {
+                    // Style fallback message if present
+                    let resultText = data.text || 'No text extracted.';
+                    if (resultText.includes('[Fallback Mode')) {
+                        resultText = resultText.replace(
+                            '[Fallback Mode - No receipt contour detected]',
+                            '<span style="color: orange; font-style: italic;">[Fallback Mode - No receipt contour detected]</span>'
+                        );
+                        document.getElementById('result').innerHTML = resultText;
+                    } else {
+                        document.getElementById('result').textContent = resultText;
+                    }
+
+                    // Display cropped and transformed images if available (high-res mode only)
+                    if (selectedMode === 'high-res' && data.cropped_image && data.transformed_image) {
+                        const timestamp = new Date().getTime(); // Add timestamp to prevent caching
+                        document.getElementById('croppedImage').src = `${data.cropped_image}?t=${timestamp}`;
+                        document.getElementById('transformedImage').src = `${data.transformed_image}?t=${timestamp}`;
+                        document.getElementById('croppedImage').style.display = 'block';
+                        document.getElementById('transformedImage').style.display = 'block';
+                    }
+                }
+                // Keep re-crop, transform, and process buttons visible for further actions
+                document.getElementById('recropButton').style.display = 'inline-block';
+                document.getElementById('selectCornersButton').style.display = 'inline-block';
+                document.getElementById('transformButton').style.display = 'inline-block';
+                document.getElementById('processStandardButton').style.display = 'inline-block';
+                document.getElementById('processHighResButton').style.display = 'inline-block';
+                document.getElementById('saveJsonButton').style.display = 'inline-block';
+            } catch (error) {
+                document.getElementById('loader').style.display = 'none';
+                document.getElementById('result').textContent = `Error: ${error.message}`;
+            }
+        }
+
+        // Handle save to JSON button
+        document.getElementById('saveJsonButton').addEventListener('click', async function() {
+            const resultElement = document.getElementById('result');
+            let extractedText = resultElement.textContent;
+
+            // Check if the result contains HTML (e.g., fallback message)
+            if (resultElement.innerHTML !== resultElement.textContent) {
+                // Use textContent to avoid including HTML tags
+                extractedText = resultElement.textContent;
+            }
+
+            if (extractedText === 'Extracted text will appear here...' || extractedText.includes('Processing...') || extractedText.includes('Error:')) {
+                document.getElementById('result').textContent = 'No valid text to save. Please process an image first.';
+                return;
+            }
+
+            // Create data object
+            const data = {
+                text: extractedText
+            };
+
+            document.getElementById('loader').style.display = 'block';
+            document.getElementById('result').textContent = 'Saving JSON...';
+
+            try {
+                // Send data to Flask server
+                const response = await fetch('http://127.0.0.1:5000/save_json', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+                document.getElementById('loader').style.display = 'none';
+
+                if (result.error) {
+                    document.getElementById('result').textContent = `Error: ${result.error}\n\n${extractedText}`;
+                } else {
+                    document.getElementById('result').textContent = `JSON file saved successfully to data folder!\n\n${extractedText}`;
+                }
+            } catch (error) {
+                document.getElementById('loader').style.display = 'none';
+                document.getElementById('result').textContent = `Error: ${error.message}\n\n${extractedText}`;
+            }
+        });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'940a535f4b6af5bd',t:'MTc0NzM5Mjc0Ny4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9411c1b7ec773e15',t:'MTc0NzQ3MDY2Ny4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

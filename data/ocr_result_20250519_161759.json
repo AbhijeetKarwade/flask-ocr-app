@@ -1,0 +1,25 @@
+{
+    "bill_no": 19,
+    "vendor_name": "Nhk1924 Jun2817 0536Pnast",
+    "items": [
+        {
+            "quantity": 1,
+            "name": "Cash",
+            "price": "13.25"
+        },
+        {
+            "quantity": 1,
+            "name": "Food",
+            "price": "12.06"
+        },
+        {
+            "quantity": 1,
+            "name": "Payment",
+            "price": "13.12"
+        }
+    ],
+    "subtotal": null,
+    "tax": "1.06",
+    "total": null,
+    "payment_type": "Cash"
+}

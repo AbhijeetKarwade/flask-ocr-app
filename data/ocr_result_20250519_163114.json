@@ -1,0 +1,35 @@
+{
+    "bill_no": 27,
+    "vendor_name": "Fgrantd Tixkcafr",
+    "items": [
+        {
+            "quantity": 1,
+            "name": "Coffee",
+            "price": "2.95"
+        },
+        {
+            "quantity": 1,
+            "name": "Chickenparmesan",
+            "price": "17.95"
+        },
+        {
+            "quantity": 1,
+            "name": "Primetopsirloin",
+            "price": "25.95"
+        },
+        {
+            "quantity": 1,
+            "name": "Thebaconcheeseburger",
+            "price": "13.95"
+        },
+        {
+            "quantity": 1,
+            "name": "E",
+            "price": "2.95"
+        }
+    ],
+    "subtotal": "69.25",
+    "tax": "5.50",
+    "total": null,
+    "payment_type": null
+}
