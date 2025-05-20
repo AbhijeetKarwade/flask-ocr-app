@@ -3,14 +3,19 @@ services:
     name: flask-ocr-app
     env: python
     plan: free
+    runtime: python3.9
     buildCommand: |
-      # Install Tesseract by downloading a pre-built binary
+      echo "Starting build process..."
+      echo "Installing wget..."
       apt-get update -o Acquire::http::Timeout=30 -o Acquire::ftp::Timeout=30 || true
       apt-get install -y wget
+      echo "Downloading Tesseract binary..."
       wget https://github.com/tesseract-ocr/tesseract/releases/download/5.3.4/tesseract-ocr_5.3.4-1_amd64.deb
+      echo "Installing Tesseract..."
       dpkg -i tesseract-ocr_5.3.4-1_amd64.deb
       rm tesseract-ocr_5.3.4-1_amd64.deb
-      # Install libtesseract-dev dependencies if needed
-      apt-get install -y --fix-missing libtesseract-dev
-      pip install -r requirements.txt
+      echo "Tesseract installation completed."
+      echo "Installing Python dependencies..."
+      pip install --no-cache-dir -r requirements.txt
+      echo "Python dependencies installed."
     startCommand: gunicorn app:app
